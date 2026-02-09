@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>🌙 التحدي الرمضاني العائلي</title>
+
+<style>
+body{direction:rtl;font-family:Tahoma;background:#0f2027;color:white;text-align:center}
+.box{background:white;color:black;padding:15px;margin:15px auto;max-width:550px;border-radius:12px}
+input,button{padding:7px;margin:4px}
+button{background:#27ae60;color:white;border:none;border-radius:6px;cursor:pointer}
+.red{background:#c0392b}
+.progress{background:#ddd;border-radius:20px;overflow:hidden;margin:5px 0}
+.bar{height:18px;background:#27ae60}
+.small{font-size:13px;color:#333}
+.note{color:#555;font-size:13px}
+</style>
+</head>
+
+<body>
+
+<h1>🌙 التحدي الرمضاني العائلي</h1>
+<p id="publicZekr"></p>
+<p>🤍 لا تنسَ الدعاء لوالديك</p>
+
+<!-- دخول -->
+<div class="box">
+  <input id="name" placeholder="الاسم">
+  <input id="pass" type="password" placeholder="كلمة السر">
+  <br>
+  <button onclick="login()">دخول</button>
+</div>
+
+<!-- لوحة الشخص -->
+<div id="panel" class="box" style="display:none">
+  <h3 id="welcome"></h3>
+  <p id="userZekr"></p>
+
+  <b>📖 القرآن</b><br>
+  صفحات: <span id="pages">0</span> | أجزاء: <span id="juz">0</span><br>
+  <button onclick="add('pages',1)">+1</button>
+  <button onclick="add('pages',5)">+5</button>
+  <button class="red" onclick="add('pages',-1)">−1</button>
+
+  <hr>
+
+  <b>🤲 الأذكار</b><br>
+  العدد: <span id="azkar">0</span><br>
+  <button onclick="add('azkar',10)">+10</button>
+  <button class="red" onclick="add('azkar',-10)">−10</button>
+
+  <hr>
+
+  <b>💰 الصدقة</b><br>
+  العدد: <span id="sadaqa">0</span><br>
+  <button onclick="add('sadaqa',1)">+1</button>
+  <button class="red" onclick="add('sadaqa',-1)">−1</button>
+
+  <hr>
+
+  <b>🌟 عمل صالح إضافي</b><br>
+  <button onclick="goodDeed()">أجر إضافي</button>
+
+  <hr>
+
+  <b>✨ الحسنات التقريبية</b><br>
+  <span id="hasanat">0</span><br>
+  <span class="note">والله يضاعف لمن يشاء</span>
+
+  <hr>
+
+  <b>📖 الختمة العائلية</b><br>
+  صفحات: <span id="familyQ">0</span> / 604<br>
+  <button id="famPlus" onclick="addFamily(1)">+1</button>
+  <button id="famMinus" class="red" onclick="addFamily(-1)">−1</button>
+</div>
+
+<!-- من برا -->
+<div class="box">
+  <h3>🏁 التقدم العائلي – القرآن</h3>
+  <div id="list"></div>
+</div>
+
+<script>
+const azkarList=[
+"سبحان الله وبحمده",
+"لا إله إلا الله",
+"اللهم صلّ على محمد",
+"أستغفر الله العظيم",
+"سبحان الله العظيم"
+];
+
+const users={
+"هيثم":{pass:"1111",pages:0,azkar:0,sadaqa:0,bonus:0},
+"مصطفى":{pass:"2222",pages:0,azkar:0,sadaqa:0,bonus:0},
+"محمد":{pass:"1234",pages:0,azkar:0,sadaqa:0,bonus:0},
+"طلال":{pass:"3333",pages:0,azkar:0,sadaqa:0,bonus:0},
+"جودي":{pass:"4444",pages:0,azkar:0,sadaqa:0,bonus:0},
+"احمد":{pass:"5555",pages:0,azkar:0,sadaqa:0,bonus:0},
+"منال":{pass:"6666",pages:0,azkar:0,sadaqa:0,bonus:0},
+"مياس":{pass:"7777",pages:0,azkar:0,sadaqa:0,bonus:0},
+"عدنان":{pass:"8888",pages:0,azkar:0,sadaqa:0,bonus:0}
+};
+
+let current=null;
+let familyQ=0;
+
+function randZekr(){
+  return azkarList[Math.floor(Math.random()*azkarList.length)];
+}
+document.getElementById("publicZekr").innerText=randZekr();
+
+function login(){
+  const n=name.value.trim(),p=pass.value;
+  if(!users[n]||users[n].pass!==p) return alert("الاسم أو كلمة السر خطأ");
+
+  current=n;
+  panel.style.display="block";
+  welcome.innerText="أهلًا "+n;
+  userZekr.innerText=randZekr();
+
+  famPlus.disabled=famMinus.disabled = n!=="محمد";
+  update();
+}
+
+function add(type,val){
+  const u=users[current];
+  u[type]=Math.max(0,u[type]+val);
+  update();
+}
+
+function goodDeed(){
+  users[current].bonus+=50;
+  alert("🌸 تقبّل الله عملك");
+  update();
+}
+
+function addFamily(val){
+  familyQ=Math.max(0,Math.min(604,familyQ+val));
+  update();
+}
+
+function update(){
+  const u=users[current];
+  pages.innerText=u.pages;
+  juz.innerText=Math.floor(u.pages/20);
+  azkar.innerText=u.azkar;
+  sadaqa.innerText=u.sadaqa;
+
+  hasanat.innerText =
+    u.pages*100 + u.azkar + u.sadaqa*10 + u.bonus;
+
+  familyQSpan=familyQ;
+  document.getElementById("familyQ").innerText=familyQ;
+
+  drawList();
+}
+
+function drawList(){
+  let h="";
+  for(let n in users){
+    const p=users[n].pages;
+    const percent=Math.min(p/604*100,100);
+    h+=`<div class="small">${n}</div>
+    <div class="progress"><div class="bar" style="width:${percent}%"></div></div>`;
+  }
+  list.innerHTML=h;
+}
+drawList();
+</script>
+
+</body>
+</html>
